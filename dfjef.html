@@ -1,0 +1,211 @@
+<script src = "https://unpkg.com/deeplearn"></script>
+
+<html>
+    <body style = 'width:100%; height:100%; font-family: Consolas; font-size:12px'>
+        <span style = 'font-size:20px'>Console<br/><br/></span>
+        <div id = 'output' >
+        </div>
+    </body>
+
+    <div style = 'height:100%; width:1'>
+    </div>
+
+</html>
+
+<script>
+    try{
+        var queue_index = 0;
+        var queue_pointer = 1;
+
+        function _print_variable(data, s, br, print, dimensions, dimensions_, shift, prefix, suffix, idx){
+            /*
+                print_variable(d, s, b, p , d, d_) -> string
+
+                A helper function that prints out tensors. Literally the hackiest thing in the world, but it works lel.
+                */
+
+            // Build the string
+
+            if (s.length == 0){
+                document.getElementById("output").innerHTML += data ;
+                return;
+            }
+
+            if (s.length == 1){
+                var print_str = '[';
+
+                for (i = 0; i < s[0]; i++){
+                    print_str += data[i];
+
+                    if (i != s[0] - 1){
+                        print_str += ' ';
+                    }
+                }
+
+
+            }else{
+                var partition_size = 1;
+                var residual_shape = s.slice(1);
+
+                var space = '';
+
+                for (l = 1; l < s.length; l++){
+                    partition_size *= s[l];
+
+                }
+
+                for (d = 0; d < dimensions_ + shift; d++){
+                    space += '&emsp;';
+                }
+
+                var print_str = '[';
+
+                for (var first_axis = 0; first_axis < s[0]; first_axis ++){
+                    var data_partition = data.slice(partition_size * first_axis, partition_size * first_axis + partition_size);
+
+                    if (first_axis != 0 && !print){
+                        print_str += space.slice(0, -((dimensions - 1)) * 6);
+                    }
+
+                    if (first_axis != 0 && print){
+                        print_str += space.slice(0, -((dimensions - 1) * 6));
+                    }
+
+                    if (print){
+                        console.log(first_axis);
+                    }
+
+                    if (first_axis != (s[0] - 1)){
+                        print_str += _print_variable(data_partition, residual_shape, true, false, dimensions - 1, dimensions_, shift, null, null);
+
+                    }else{
+                        print_str += _print_variable(data_partition, residual_shape, false, false, dimensions - 1, dimensions_, shift, null, null);
+                        if (print){
+                        console.log(first_axis);
+                    }
+                    }
+                }
+
+
+            }
+
+            print_str += ']';
+
+            if (br && !print){
+                print_str += '</br>';
+            }
+
+            if (print){
+                var check = setInterval(
+                    function(){
+                        console.log(idx, queue_pointer);
+                        if (idx == queue_pointer){
+                            document.getElementById('output').innerHTML += prefix + print_str + suffix;
+                            queue_pointer ++;
+
+                            clearInterval(check);
+                        }
+                    }
+                    , 100);
+
+
+            }else{
+                return print_str;
+            }
+
+            //document.getElementById("output").innerHTML += print_str;
+        }
+
+        function print_variable(value, shape, name, idx){
+            try{
+                var l= shape.length;
+                var prefix = "<span style = 'font-weight:700;color:#1565c0'>" +name + ' : </span>';
+                var suffix = '<br><br>';
+                _print_variable(value, shape, true, true, l, l, name.length + 3, prefix, suffix, idx);
+
+            }
+            catch (e){
+                document.getElementById('output').innerHTML += "<span style = 'color: b71c1c'>" + e.toString() + ' ' + v['shape'] + '<br><br/></span>';
+            }
+        }
+
+        function print(v, name){
+            if (v.constructor.name === 'String' ){
+                queue_index ++;
+                var idx = queue_index;
+
+                v = v.replace('\n', '</br>');
+
+                var check = setInterval(
+                    function(v){
+                        console.log(idx, queue_pointer);
+                        if (idx == queue_pointer){
+                            document.getElementById('output').innerHTML += v + '<br>';
+                            queue_pointer ++;
+
+                            clearInterval(check);
+                        }
+                }
+                , 100, [v]);
+
+
+            }
+
+            else if (v.constructor.name === 'Number'){
+                queue_index ++;
+                var idx = queue_index;
+
+
+                var check = setInterval(
+                    function(v){
+                        console.log(idx, queue_pointer);
+                        if (idx == queue_pointer){
+                            document.getElementById('output').innerHTML += v + '<br>';
+                            queue_pointer ++;
+
+                            clearInterval(check);
+                        }
+                }
+                , 100, [v]);
+
+
+            }
+
+
+            else{
+
+            queue_index ++;
+            var idx = queue_index;
+            v.data().then(value => print_variable(value, v.shape, name, idx));
+        }
+
+        }
+
+        // WRITE CODE HERE
+
+        var dl = deeplearn;
+
+        var math = new dl.NDArrayMathGPU();
+        var a = dl.Array4D.new([2, 2, 5, 2], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+        var b = dl.Scalar.new(2);
+
+        var diff = math.sub(a, b);
+
+        print(diff, "diff");
+        print('\n');
+        print(a, 'a');
+        print(a, 'a');
+
+        for (i = 0; i < 10; i++){
+            print("11/" + i + " = " + 11/i);
+        }
+
+        print("hello");
+        print("text");
+
+    }
+    catch (e) {
+        document.getElementById('output').innerHTML += "<span style = 'color: b71c1c'>" + e.toString() + '<br><br/></span>';
+
+    }
+</script>
