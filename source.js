@@ -10,20 +10,24 @@ try{
 	var result = g.multiply(input, multiplier);
 	
 	// compute square distance loss 
-	var square_distance = g.square(g.subtract(result, target), 2);
+	var square_distance = g.reduceSum(g.square(g.subtract(result, target), 2));
 
 	const learning_rate = 0.001;
 	const batch_size = 3;
 	
 	const session = new dl.Session(g, math);
-	const optimizer = new SGDOptimizer(learning_rate);
+	const optimizer = new dl.SGDOptimizer(learning_rate);
 	
 	for (i = 0; i < 100; i++){
-		var val = Math.rand();
-		var input = Matrix.new([1, 1], [val]);
-		var target = Matrix.new([1, 1], [val * 2]);
+		var val = Math.random();
+		var input_ = Matrix.new([1, 1], [val]);
+		var target_ = Matrix.new([1, 1], [val * 2]);
 		
-		const cost = session.train(square_distance, {'inp' : input, 'target' : target}, 1, optimizer, CostReduction.MEAN);
+		const feedEntries = dl.FeedEntry[]([
+
+		]
+
+		const cost = session.train(square_distance,[{input : input_, target : target_}], 1, optimizer, dl.CostReduction.MEAN);
 		
 		print(cost);
 	}
